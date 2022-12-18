@@ -4,7 +4,7 @@ Sequencing Trait-Associated Mutations (STAM)
 ![图1-STAM](https://user-images.githubusercontent.com/7081243/208272511-42718937-3272-4729-9759-3fcd483840e2.jpg)
 -----
 ### 1) de novo transcriptome reconstruction
-The raw sequencing reads (PacBio subreads) were processed by ccs to generate polished circular consensus sequence (CCS reads), then used for primer removal and demultiplexing using lima to generate full-length reads; The full-length reads were refined by trimming of PolyA tail and artificial concatemer removal using IsoSeq3 (https://github.com/PacificBiosciences/IsoSeq) and generated full-length, non-concatemer reads (FLNC reads); Two SMRT cells FLNC reads were merged and clustered to generate polished transcript isoforms (HQ transcripts).
+The raw sequencing reads (PacBio subreads) were processed by ccs to generate polished circular consensus sequence (CCS reads), then used for primer removal and demultiplexing using lima to generate full-length reads; The full-length reads were further refined by trimming PolyA tail and artificial concatemer using IsoSeq3 (https://github.com/PacificBiosciences/IsoSeq) to generate full-length, non-concatemer reads (FLNC reads); Two SMRT cells FLNC reads were merged and clustered to generate polished transcript isoforms (HQ transcripts). 
 ##### a. Generate CCS reads
 ``` bash
 ccs P10-46-1.subreads.0.bam P10-46-1.ccs.bam
@@ -76,4 +76,6 @@ SNPs that meet all of the following criterias were further retained in the resul
 perl select_homo.pl YrNAM.output.filtered.vcf > YrNAM.homo.txt #filtration criterias: a. read depth ≥ 5; b. homozygous sites;
 perl select_mutation1.pl YrNAM.homo.txt > YrNAM.mutation1.txt #filtration criterias: c. G to A and C to T mutations; d. independent mutations among all seven Yr10-defective mutants;
 perl select_mutation2.pl YrNAM.mutation1.txt > YrNAM.mutation2.txt #filtration criterias: e. No. of SNPs per transcript in each mutant = 1;
+perl filter_mutation.pl YrNAM.mutation2.txt > YrNAM.mutation2.txt #filtration criterias: f. missing rate ≤ 60%; mutation sites absent in Moro were also removed;
+
 ```
