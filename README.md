@@ -62,15 +62,15 @@ Adapter trimming and quality filtration of RNA-Seq reads of seven Yr10-defective
 for sample in $(cat sample.id)
 do
     $fastp --thread 2 \
-        --in1 ./RNA-Seq_Batch2/$name.R1.out.fastq.gz \
-        --in2 ./RNA-Seq_Batch2/$name.R2.out.fastq.gz \
-        --out1 ./1.cleandata/$name.R1.clean.fq.gz \
-        --out2 ./1.cleandata/$name.R2.clean.fq.gz \
+        --in1 $name.R1.out.fastq.gz \
+        --in2 $name.R2.out.fastq.gz \
+        --out1 $name.R1.clean.fq.gz \
+        --out2 $name.R2.clean.fq.gz \
         -q 3 \
         -u 50 \
         --length_required 150 \
-        -h ./1.cleandata/$name.html \
-        -j ./1.cleandata/$name.json
+        -h $name.html \
+        -j $name.json
 done
 ```
 ##### b. Mapping
