@@ -20,8 +20,7 @@ while(<>){
         }
     }
     my $print = join("\t", @line[0,1,3,4,9..$#line]);
-    my $info = join("\t", @line[9..15]); #for batch 2
-    #my $info = join("\t", @line[9..26]); #for batch 1
+    my $info = join("\t", @line[9..$#line]);
     print "$print\n" if ($info =~ /0\/0/ and $info =~ /1\/1/);
     }
 }
