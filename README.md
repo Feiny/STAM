@@ -24,14 +24,15 @@ isoseq3 refine --require-polya P10-46-2.fl.primer_5p--primer_3p.bam primers.fast
 ##### d. Generate HQ transcripts
 ``` bash
 ls P10-46*.flnc.bam > flnc.fofn
-isoseq3 cluster flnc.fofn clustered.bam --verbose --use-qvs
+isoseq3 cluster --verbose --use-qvs flnc.fofn P10-46.clustered.bam
 ```
 -----
 ### 2) Construction of final transcriptome reference
 HQ transcripts were mapped to the genome reference of *Pst* isolate 134E (DOI:10.1094/MPMI-09-21-0236-A) using Minimap2 (https://github.com/lh3/minimap2) to identify the stripe rust transcripts introduced during sampling and RNA extracting. After removing stripe rust transcripts, transposable elements were masked using Repeatmasker (http://www.repeatmasker.org) based on the repeat library Dfam3.6 (https://www.dfam.org). After filtration and masking, masked HQ transcripts were mapped to wheat Chinese Spring genome reference IWGSC RefSeq v2.1 (https://www.wheatgenome.org) using Minimap2 and generated aligned HQ transcripts. To collapse redundant isoforms caused by 5’ RNA degradation, Cupcake and Cogent (https://github.com/Magdoll) were used to generate unique transcripts for well-mapped reads and unmapped reads, respectively. Then, two parts of unique transcripts were merged to generate the final transcript set using CD-HIT-EST with the sequence identity threshold at 100% (-c 1).
 ##### a. Generate fished HQ transcripts
 ``` bash
-
+minimap2 -t 8 -Y -R "@RG\tID:Sample\tSM:hs\tLB:ga\tPL:PacBio" --MD -ax splice:hq -uf --secondary=no pst.reference.fasta ../P10-46.clustered.hq.fasta >aligned.pst134e.sam
+grep -v '@' aligned.pst134e.sam | awk '$3!="*"{print}' | cut -f 1 | sort | uniq >aligned.pst134e.id ##655
 ```
 ##### b. Generate masked HQ transcripts
 ``` bash
