@@ -57,7 +57,21 @@ filter_away_subset.py clustered.collapsed.min_fl_1
 ---
 ### 3) Variant calling
 Adapter trimming and quality filtration of RNA-Seq reads of seven Yr10-defective mutants and resistant cultivar Moro were firstly performed using fastp (https://github.com/OpenGene/fastp), and the clean data was then mapped to the final transcript set obtained in the previous step using STAR (https://github.com/alexdobin/STAR). Potential PCR duplicates reads were further removed using Picard (https://broadinstitute.github.io/picard) and generated analysis ready reads. SNPs were identified by the HaplotypeCaller tool of GATK v4.2 in GVCF mode (https://gatk.broadinstitute.org). Then, all the per-sample GVCFs were gathered and passed to GATK GenotypeGVCFs for joint calling. Variants were preliminarily filtered using GATK VariantFiltration with the parameter “DP < 5 || FS > 60.0 || MQ < 40.0 || QD < 2.0” and generated analysis-ready SNPs. 
+##### a. Adapter trimming and quality filtration of RNA-Seq data
+``` bash
 
+```
+##### b. Mapping
+``` bash
+
+```
+##### c. Variant calling
+``` bash
+
+```
 -----
 ### 4) Mutation filtering
 SNPs that meet all of the following criterias were further retained in the result of final mutations: a. read depth ≥ 5; b. homozygous sites; c. G to A and C to T mutations; d. independent mutations among all seven Yr10-defective mutants; e. No. of SNPs per transcript in each mutant = 1; f. missing rate ≤ 60%. 
+``` bash
+perl select_homo.pl YrNAM.output.filtered.vcf
+```
