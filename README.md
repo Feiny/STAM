@@ -7,7 +7,7 @@ Sequencing Trait-Associated Mutations (STAM)
 The raw sequencing reads (PacBio subreads) were processed by ccs to generate polished circular consensus sequence (CCS reads), then used for primer removal and demultiplexing using lima to generate full-length reads; The full-length reads were refined by trimming of PolyA tail and artificial concatemer removal using IsoSeq3 (https://github.com/PacificBiosciences/IsoSeq) and generated full-length, non-concatemer reads (FLNC reads); Two SMRT cells FLNC reads were merged and clustered to generate polished transcript isoforms (HQ transcripts).
 ##### a. Generate CCS reads
 ``` bash
-cd ~/Project_Yr10/PacBio_Yr10/minimap2/Iso-Seq
+cd ~/Data/Iso-Seq
 ccs P10-46-1.subreads.0.bam P10-46-1.ccs.bam
 ccs P10-46-2.subreads.1.bam P10-46-2.ccs.bam
 ```
@@ -20,6 +20,11 @@ lima --isoseq --dump-clips P10-46-2.ccs.bam primers.fasta P10-46-2.fl.bam --log-
 ``` bash
 isoseq3 refine --require-polya P10-46-1.fl.primer_5p--primer_3p.bam primers.fasta P10-46-1.flnc.bam
 isoseq3 refine --require-polya P10-46-2.fl.primer_5p--primer_3p.bam primers.fasta P10-46-2.flnc.bam
+```
+##### d. Generate HQ transcripts
+``` bash
+ls P10-46*.flnc.bam > flnc.fofn
+isoseq3 cluster flnc.fofn clustered.bam --verbose --use-qvs
 ```
 -----
 ### 2) Construction of final transcriptome reference
