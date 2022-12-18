@@ -59,15 +59,87 @@ filter_away_subset.py clustered.collapsed.min_fl_1
 Adapter trimming and quality filtration of RNA-Seq reads of seven Yr10-defective mutants and resistant cultivar Moro were firstly performed using fastp (https://github.com/OpenGene/fastp), and the clean data was then mapped to the final transcript set obtained in the previous step using STAR (https://github.com/alexdobin/STAR). Potential PCR duplicates reads were further removed using Picard (https://broadinstitute.github.io/picard) and generated analysis ready reads. SNPs were identified by the HaplotypeCaller tool of GATK v4.2 in GVCF mode (https://gatk.broadinstitute.org). Then, all the per-sample GVCFs were gathered and passed to GATK GenotypeGVCFs for joint calling. Variants were preliminarily filtered using GATK VariantFiltration with the parameter “DP < 5 || FS > 60.0 || MQ < 40.0 || QD < 2.0” and generated analysis-ready SNPs. 
 ##### a. Adapter trimming and quality filtration of RNA-Seq data
 ``` bash
-
+for sample in $(cat sample.id)
+do
+    $fastp --thread 2 \
+        --in1 ./RNA-Seq_Batch2/$name.R1.out.fastq.gz \
+        --in2 ./RNA-Seq_Batch2/$name.R2.out.fastq.gz \
+        --out1 ./1.cleandata/$name.R1.clean.fq.gz \
+        --out2 ./1.cleandata/$name.R2.clean.fq.gz \
+        -q 3 \
+        -u 50 \
+        --length_required 150 \
+        -h ./1.cleandata/$name.html \
+        -j ./1.cleandata/$name.json
+done
 ```
 ##### b. Mapping
 ``` bash
+for sample in $(cat sample.id)
+do
+    $STAR --runThreadN 24 \
+        --genomeDir $refdir \
+        --readFilesIn $name.R1.clean.fq.gz $name.R2.clean.fq.gz \
+        --readFilesCommand zcat \
+        --outSAMtype BAM SortedByCoordinate \
+        --limitBAMsortRAM 100000000000 \
+        --outFileNamePrefix $name. \
+        --outSAMmapqUnique 60
 
+    java -XX:ParallelGCThreads=24 -jar $picard \
+        AddOrReplaceReadGroups \
+        --INPUT $name.Aligned.sortedByCoord.out.bam \
+        --OUTPUT $name.RG.bam \
+        --SORT_ORDER coordinate \
+        --MAX_RECORDS_IN_RAM 1000000 \
+        --RGLB $name \
+        --RGPL ILLUMINA \
+        --RGPU BARCODE \
+        --RGSM $name
+    
+    java -XX:ParallelGCThreads=24 -jar $picard \
+        MarkDuplicates \
+        --INPUT $name.RG.bam \
+        --OUTPUT $name.dedupped.bam \
+        --CREATE_INDEX true \
+        --VALIDATION_STRINGENCY SILENT \
+        --METRICS_FILE $name.metrics
+    
+    #rm -rf $name.Aligned.sortedByCoord.out.bam $name.Log.out $name.Log.progress.out $name.SJ.out.tab $name.RG.bam $name.metrics
+done
 ```
 ##### c. Variant calling
 ``` bash
+for sample in $(cat sample.id)
+do
+    $gatk --java-options -Xmx5G HaplotypeCaller -R $ref -I $name.dedupped.bam -OVI false -ERC GVCF -O $name.g.vcf.gz 1>$name.hc.log 2>&1
+    $gatk --java-options -Xmx5G IndexFeatureFile -I $name.g.vcf.gz
+done
 
+$gatk --java-options -Xmx10G CombineGVCFs \
+    -R $ref \
+    --variant M110.g.vcf.gz \
+    --variant M160.g.vcf.gz \
+    --variant M16.g.vcf.gz \
+    --variant M168.g.vcf.gz \
+    --variant M19.g.vcf.gz \
+    --variant M38.g.vcf.gz \
+    --variant M62.g.vcf.gz \
+    --variant Moro.g.vcf.gz \
+    -O YrNAM.cohort.g.vcf.gz
+
+$gatk --java-options -Xmx10G GenotypeGVCFs \
+    -R $ref \
+    -V YrNAM.cohort.g.vcf.gz \
+    -O YrNAM.output.vcf.gz
+
+#Variant filtering
+$gatk --java-options -Xmx10G VariantFiltration \
+    -R $ref \
+    -V YrNAM.output.vcf.gz \
+    -O YrNAM.output.filtered.vcf.gz \
+    --filter-name "GATK_Filter" \
+    --filter-expression "DP < 5.0 || FS > 60.0 || MQ < 40.0 || QD < 2.0 "
 ```
 -----
 ### 4) Mutation filtering
