@@ -73,5 +73,7 @@ Adapter trimming and quality filtration of RNA-Seq reads of seven Yr10-defective
 ### 4) Mutation filtering
 SNPs that meet all of the following criterias were further retained in the result of final mutations: a. read depth ≥ 5; b. homozygous sites; c. G to A and C to T mutations; d. independent mutations among all seven Yr10-defective mutants; e. No. of SNPs per transcript in each mutant = 1; f. missing rate ≤ 60%. 
 ``` bash
-perl select_homo.pl YrNAM.output.filtered.vcf
+perl select_homo.pl YrNAM.output.filtered.vcf > YrNAM.homo.txt #filtration criterias: a. read depth ≥ 5; b. homozygous sites;
+perl select_mutation1.pl YrNAM.homo.txt > YrNAM.mutation1.txt #filtration criterias: c. G to A and C to T mutations; d. independent mutations among all seven Yr10-defective mutants;
+perl select_mutation2.pl YrNAM.mutation1.txt > YrNAM.mutation2.txt #filtration criterias: e. No. of SNPs per transcript in each mutant = 1;
 ```
