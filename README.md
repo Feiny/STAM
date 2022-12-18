@@ -7,7 +7,6 @@ Sequencing Trait-Associated Mutations (STAM)
 The raw sequencing reads (PacBio subreads) were processed by ccs to generate polished circular consensus sequence (CCS reads), then used for primer removal and demultiplexing using lima to generate full-length reads; The full-length reads were refined by trimming of PolyA tail and artificial concatemer removal using IsoSeq3 (https://github.com/PacificBiosciences/IsoSeq) and generated full-length, non-concatemer reads (FLNC reads); Two SMRT cells FLNC reads were merged and clustered to generate polished transcript isoforms (HQ transcripts).
 ##### a. Generate CCS reads
 ``` bash
-cd ~/Data/Iso-Seq
 ccs P10-46-1.subreads.0.bam P10-46-1.ccs.bam
 ccs P10-46-2.subreads.1.bam P10-46-2.ccs.bam
 ```
