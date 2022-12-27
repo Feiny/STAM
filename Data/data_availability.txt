@@ -1,1 +1,3 @@
-
+DNA resequencing data and error-corrected IsoSeq full-length cDNA reads for WT P10-46, 
+and RNA-Seq data for P10-46 and seven independent mutants have been deposited in the NCBI 
+Sequence Read Archive (SRA) under accession number PRJNA877303. 
