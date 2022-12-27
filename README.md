@@ -33,23 +33,23 @@ HQ transcripts were mapped to the genome reference of *Pst* isolate 134E (DOI:10
 #Map HQ transcripts to the genome reference of *Pst* isolate 134E
 minimap2 -t 8 -Y -R "@RG\tID:Sample\tSM:hs\tLB:ga\tPL:PacBio" --MD -ax splice:hq -uf --secondary=no Pst134e.reference.fasta P10-46.clustered.hq.fasta >aligned.Pst134e.sam
 #Remove the stripe rust transcripts
-grep -v '@' aligned.Pst134e.sam | awk '$3=="*"{print $1}' | sort -t "/" -k 2 -n | uniq >unaligned.Pst134e.id
-perl fish_fasta_unaligned.pl unaligned.Pst134e.id P10-46.clustered.hq.fasta >P10-46.unaligned.hq.fasta
+grep -v '@' aligned.Pst134e.sam | awk '$3=="*"{print $1}' | sort -t "/" -k 2 -n | uniq > unaligned.Pst134e.id
+perl fish_fasta_unaligned.pl unaligned.Pst134e.id P10-46.clustered.hq.fasta > P10-46.unaligned.hq.fasta
 ```
 ##### b. Generate masked HQ transcripts
 ``` bash
 #Mask transposable elements using Repeatmasker
 RepeatMasker -gff -nolow -no_is -xsmall -pa 12 P10-46.unaligned.hq.fasta
 #Identify transposable elements
-grep -v '^#' P10-46.unaligned.hq.fasta.out.gff | cut -f 1 |  sort -t "/" -k 2 -n >P10-46.masked.hq.fasta.out.id
+grep -v '^#' P10-46.unaligned.hq.fasta.out.gff | cut -f 1 |  sort -t "/" -k 2 -n > P10-46.masked.hq.fasta.out.id
 #Remove transposable elements
-perl fish_fasta_unmasked.pl P10-46.masked.hq.fasta.out.id P10-46.unaligned.hq.fasta >P10-46.masked.hq.fasta
+perl fish_fasta_unmasked.pl P10-46.masked.hq.fasta.out.id P10-46.unaligned.hq.fasta > P10-46.masked.hq.fasta
 ```
 ##### c. Generate aligned HQ transcripts
 ``` bash
 #Generate aligned, sorted sam file
 minimap2 -t 24 -Y -R "@RG\tID:Sample\tSM:hs\tLB:ga\tPL:PacBio" --MD -ax splice:hq -uf --secondary=no iwgsc_refseqv2.1_assembly.mmi P10-46.masked.hq.fasta -o aligned.RefSeq2.1.sam
-sort -k 3,3 -k 4,4n aligned.RefSeq2.1.sam >aligned.RefSeq2.1.sorted.sam
+sort -k 3,3 -k 4,4n aligned.RefSeq2.1.sam > aligned.RefSeq2.1.sorted.sam
 
 #Collapse redundant isoforms (for well-mapped reads)
 collapse_isoforms_by_sam.py --input P10-46.clustered.hq.fished.fasta -s aligned.RefSeq2.1.sorted.sam --dun-merge-5-shorter -o clustered
@@ -65,7 +65,7 @@ run_mash.py --cpus=12 clustered.collapsed.group.ignored_id.fa
 #Process the distance file and create the partitions
 process_kmer_to_graph.py clustered.collapsed.group.ignored_id.fa clustered.collapsed.group.ignored_id.fa.s1000k30.dist ignored yr10
 #Generate batch commands to run family finding on each bin
-generate_batch_cmd_for_Cogent_reconstruction.py ignored >batch_cmd_for_Cogent_reconstruction.sh
+generate_batch_cmd_for_Cogent_reconstruction.py ignored > batch_cmd_for_Cogent_reconstruction.sh
 split -l 20 -d -a 3 batch_cmd_for_Cogent_reconstruction.sh tem
 for i in $(ls tem*)
 do
@@ -79,7 +79,7 @@ ls preCluster_out/*/*partition.txt | xargs -n1 -i sed '1d; $d' {} | cat >> final
 ##### d. Generate final transcript set
 ``` bash
 #uniq >P10-46.combined.id
-perl fish_fa.pl P10-46.combined.id P10-46.clustered.hq.fasta >P10-46.combined.fa
+perl fish_fa.pl P10-46.combined.id P10-46.clustered.hq.fasta > P10-46.combined.fa
 cd-hit-est -i P10-46.combined.fa -o P10-46.final.transcrits.fa -c 1 -T 12
 ```
 ---
