@@ -51,7 +51,6 @@ perl fish_fasta_unmasked.pl P10-46.masked.hq.fasta.out.id P10-46.unaligned.hq.fa
 minimap2 -t 24 -Y -R "@RG\tID:Sample\tSM:hs\tLB:ga\tPL:PacBio" --MD -ax splice:hq -uf --secondary=no iwgsc_refseqv2.1_assembly.mmi P10-46.masked.hq.fasta -o aligned.RefSeq2.1.sam
 sort -k 3,3 -k 4,4n aligned.RefSeq2.1.sam >aligned.RefSeq2.1.sorted.sam
 
-##Refer to Cogent Best Practice Guide: https://github.com/Magdoll/Cogent/wiki/Running-Cogent
 #Collapse redundant isoforms (for well-mapped reads)
 collapse_isoforms_by_sam.py --input P10-46.clustered.hq.fished.fasta -s aligned.RefSeq2.1.sorted.sam --dun-merge-5-shorter -o clustered
 #Filter collapse results by minimum FL count support
