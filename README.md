@@ -3,7 +3,7 @@ Sequencing Trait-Associated Mutations (STAM)
 ### A straightforward method to identify the gene for a trait with phenotyped mutants
 ![图1-STAM](https://user-images.githubusercontent.com/7081243/208272511-42718937-3272-4729-9759-3fcd483840e2.jpg)
 -----
-### 1) de novo transcriptome reconstruction
+### 1) **de novo** transcriptome reconstruction
 The raw sequencing reads (PacBio subreads) were processed by ccs to generate polished circular consensus sequence (CCS reads), then used for primer removal and demultiplexing using lima to generate full-length reads; The full-length reads were further refined by trimming PolyA tail and artificial concatemer using IsoSeq3 (https://github.com/PacificBiosciences/IsoSeq) to generate full-length, non-concatemer reads (FLNC reads); Two SMRT cells FLNC reads were merged and clustered to generate polished transcript isoforms (HQ transcripts). 
 ##### a. Generate CCS reads
 ``` bash
