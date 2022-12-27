@@ -87,7 +87,7 @@ cd-hit-est -i P10-46.combined.fa -o P10-46.final.transcrits.fa -c 1 -T 12
 Adapter trimming and quality filtration of RNA-Seq reads of seven Yr10-defective mutants and resistant cultivar Moro were firstly performed using fastp (https://github.com/OpenGene/fastp), and the clean data was then mapped to the final transcript set obtained in the previous step using STAR (https://github.com/alexdobin/STAR). Potential PCR duplicates reads were further removed using Picard (https://broadinstitute.github.io/picard) and generated analysis ready reads. SNPs were identified by the HaplotypeCaller tool of GATK v4.2 in GVCF mode (https://gatk.broadinstitute.org). Then, all the per-sample GVCFs were gathered and passed to GATK GenotypeGVCFs for joint calling. Variants were preliminarily filtered using GATK VariantFiltration with the parameter “DP < 5 || FS > 60.0 || MQ < 40.0 || QD < 2.0” and generated analysis-ready SNPs. 
 ##### a. Adapter trimming and quality filtration of RNA-Seq data
 ``` bash
-for sample in $(cat sample.id)
+for name in $(cat sample.id)
 do
     $fastp --thread 2 \
         --in1 $name.R1.out.fastq.gz \
@@ -118,7 +118,7 @@ $samtools faidx /home/klab/Project_Yr10/ref/uniq_id2.fa
 ```
 ###### Map RNA-Seq reads to the transcript reference
 ``` bash
-for sample in $(cat sample.id)
+for name in $(cat sample.id)
 do
     $STAR --runThreadN 24 \
         --genomeDir $refdir \
