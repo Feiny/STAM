@@ -102,6 +102,20 @@ do
 done
 ```
 ##### b. Mapping
+###### Generate genome index
+ref='P10-46.final.transcrits.fa'
+$STAR --runThreadN 64 \
+     --runMode genomeGenerate \
+     --genomeDir ~/Project_Yr10/ref/uniq_id2/ \
+     --genomeFastaFiles $ref
+#
+java -jar $picard CreateSequenceDictionary \
+      --REFERENCE /home/klab/Project_Yr10/PacBio_Yr10/collapsing/uniq_id2.fa \
+      --OUTPUT /home/klab/Project_Yr10/ref/uniq_id2.dict
+#
+$samtools faidx /home/klab/Project_Yr10/ref/uniq_id2.fa
+
+###### Map RNA-Seq reads to the transcript reference
 ``` bash
 for sample in $(cat sample.id)
 do
