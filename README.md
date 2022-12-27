@@ -79,10 +79,8 @@ ls preCluster_out/*/*partition.txt | xargs -n1 -i sed '1d; $d' {} | cat >> final
 ```
 ##### d. Generate final transcript set
 ``` bash
-#Generate uniq transcript IDs
-
-#Generate the final transcript set
-perl fish_fa.pl P10-46.clustered.hq.fasta >P10-46.combined.fa
+#uniq >P10-46.combined.id
+perl fish_fa.pl P10-46.combined.id P10-46.clustered.hq.fasta >P10-46.combined.fa
 cd-hit-est -i P10-46.combined.fa -o P10-46.final.transcrits.fa -c 1 -T 12
 ```
 ---
