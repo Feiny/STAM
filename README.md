@@ -30,17 +30,23 @@ isoseq3 cluster --verbose --use-qvs flnc.fofn P10-46.clustered.bam
 HQ transcripts were mapped to the genome reference of *Pst* isolate 134E (DOI:10.1094/MPMI-09-21-0236-A) using Minimap2 (https://github.com/lh3/minimap2) to identify the stripe rust transcripts introduced during sampling and RNA extracting. After removing stripe rust transcripts, transposable elements were masked using Repeatmasker (http://www.repeatmasker.org) based on the repeat library Dfam3.6 (https://www.dfam.org). After filtration and masking, masked HQ transcripts were mapped to wheat Chinese Spring genome reference IWGSC RefSeq v2.1 (https://www.wheatgenome.org) using Minimap2 and generated aligned HQ transcripts. To collapse redundant isoforms caused by 5’ RNA degradation, Cupcake and Cogent (https://github.com/Magdoll) were used to generate unique transcripts for well-mapped reads and unmapped reads, respectively. Then, two parts of unique transcripts were merged to generate the final transcript set using CD-HIT-EST with the sequence identity threshold at 100% (-c 1).
 ##### a. Generate fished HQ transcripts
 ``` bash
+#HQ transcripts were mapped to the genome reference of *Pst* isolate 134E
 minimap2 -t 8 -Y -R "@RG\tID:Sample\tSM:hs\tLB:ga\tPL:PacBio" --MD -ax splice:hq -uf --secondary=no Pst134e.reference.fasta P10-46.clustered.hq.fasta >aligned.Pst134e.sam
-grep -v '@' aligned.Pst134e.sam | awk '$3!="*"{print}' | cut -f 1 | sort | uniq >aligned.Pst134e.id ##655
+#To remove the stripe rust transcripts
+grep -v '@' aligned.Pst134e.sam | awk '$3=="*"{print $1}' | sort -t "/" -k 2 -n | uniq >unaligned.Pst134e.id
+perl fish_fasta_unaligned.pl unaligned.Pst134e.id P10-46.clustered.hq.fasta >P10-46.unaligned.hq.fasta
 ```
 ##### b. Generate masked HQ transcripts
 ``` bash
-RepeatMasker -gff -nolow -no_is -xsmall -pa 24 P10-46.clustered.hq.fasta
-grep -v '^#' P10-46.clustered.hq.fasta.out.gff | cut -f 1 | sort -t "/" -k 2 -n >P10-46.clustered.hq.fasta.out.id #1706
+#Transposable elements were masked using Repeatmasker
+RepeatMasker -gff -nolow -no_is -xsmall -pa 12 P10-46.unaligned.hq.fasta
+#To identify transposable elements
+grep -v '^#' P10-46.unaligned.hq.fasta.out.gff | cut -f 1 |  sort -t "/" -k 2 -n >P10-46.masked.hq.fasta.out.id
+perl fish_fasta_unmasked.pl P10-46.masked.hq.fasta.out.id P10-46.unaligned.hq.fasta >P10-46.unmasked.hq.fasta
 ```
 ##### c. Generate aligned HQ transcripts
 ``` bash
-minimap2 -t 24 -Y -R "@RG\tID:Sample\tSM:hs\tLB:ga\tPL:PacBio" --MD -ax splice:hq -uf --secondary=no iwgsc_refseqv2.1_assembly.mmi P10-46.clustered.hq.fished.fasta -o aligned.RefSeq2.1.sam
+minimap2 -t 24 -Y -R "@RG\tID:Sample\tSM:hs\tLB:ga\tPL:PacBio" --MD -ax splice:hq -uf --secondary=no iwgsc_refseqv2.1_assembly.mmi P10-46.unmasked.hq.fasta -o aligned.RefSeq2.1.sam
 sort -k 3,3 -k 4,4n aligned.RefSeq2.1.sam >aligned.RefSeq2.1.sorted.sam
 collapse_isoforms_by_sam.py --input P10-46.clustered.hq.fished.fasta -s aligned.RefSeq2.1.sorted.sam --dun-merge-5-shorter -o clustered
 get_abundance_post_collapse.py clustered.collapsed P10-46.cluster_report.csv
