@@ -42,6 +42,7 @@ perl fish_fasta_unaligned.pl unaligned.Pst134e.id P10-46.clustered.hq.fasta >P10
 RepeatMasker -gff -nolow -no_is -xsmall -pa 12 P10-46.unaligned.hq.fasta
 #To identify transposable elements
 grep -v '^#' P10-46.unaligned.hq.fasta.out.gff | cut -f 1 |  sort -t "/" -k 2 -n >P10-46.masked.hq.fasta.out.id
+#To remove transposable elements
 perl fish_fasta_unmasked.pl P10-46.masked.hq.fasta.out.id P10-46.unaligned.hq.fasta >P10-46.unmasked.hq.fasta
 ```
 ##### c. Generate aligned HQ transcripts
