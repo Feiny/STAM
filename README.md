@@ -148,7 +148,7 @@ do
         --VALIDATION_STRINGENCY SILENT \
         --METRICS_FILE $name.metrics
     
-    #rm -rf $name.Aligned.sortedByCoord.out.bam $name.Log.out $name.Log.progress.out $name.SJ.out.tab $name.RG.bam $name.metrics
+    rm -rf $name.Aligned.sortedByCoord.out.bam $name.Log.out $name.Log.progress.out $name.SJ.out.tab $name.RG.bam $name.metrics
 done
 ```
 ##### c. Variant calling
