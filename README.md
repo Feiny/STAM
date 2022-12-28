@@ -201,6 +201,6 @@ perl select_mutation1.pl YrNAM.homo.txt > YrNAM.mutation1.txt
 perl select_mutation2.pl YrNAM.mutation1.txt > YrNAM.mutation2.txt 
 
 #filtration criterias: f. missing rate ≤ 60%; mutation sites absent in Moro were also removed;
-perl filter_mutation.pl YrNAM.mutation2.txt > YrNAM.mutation2.txt 
+perl filter_mutation.pl YrNAM.mutation2.txt > YrNAM.mutation3.txt 
 
 ```
