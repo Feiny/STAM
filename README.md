@@ -7,21 +7,25 @@ Sequencing Trait-Associated Mutations (STAM)
 The raw sequencing reads (PacBio subreads) were processed by ccs to generate polished circular consensus sequence (CCS reads), then used for primer removal and demultiplexing using lima to generate full-length reads; The full-length reads were further refined by trimming PolyA tail and artificial concatemer using IsoSeq3 (https://github.com/PacificBiosciences/IsoSeq) to generate full-length, non-concatemer reads (FLNC reads); Two SMRT cells FLNC reads were merged and clustered to generate polished transcript isoforms (HQ transcripts). 
 ##### a. Generate CCS reads
 ``` bash
+#Generate Circular Consensus Sequencing (CCS) reads
 ccs P10-46-1.subreads.0.bam P10-46-1.ccs.bam
 ccs P10-46-2.subreads.1.bam P10-46-2.ccs.bam
 ```
 ##### b. Generate full-length reads
 ``` bash
+#Remove the 5’ and 3’ cDNA primers using LIMA to generate full-length (FL) reads
 lima --isoseq --dump-clips P10-46-1.ccs.bam primers.fasta P10-46-1.fl.bam --log-file P10-46-1.fl.bam.log
 lima --isoseq --dump-clips P10-46-2.ccs.bam primers.fasta P10-46-2.fl.bam --log-file P10-46-2.fl.bam.log
 ```
 ##### c. Generate FLNC reads
 ``` bash
+#Remove PolyA tail and artificial concatemers to generate full-length, non-concatemer (FLNC) reads
 isoseq3 refine --require-polya P10-46-1.fl.primer_5p--primer_3p.bam primers.fasta P10-46-1.flnc.bam
 isoseq3 refine --require-polya P10-46-2.fl.primer_5p--primer_3p.bam primers.fasta P10-46-2.flnc.bam
 ```
 ##### d. Generate HQ transcripts
 ``` bash
+#Merge two SMRT cells and generate high quality (HQ) transcripts
 ls P10-46*.flnc.bam > flnc.fofn
 isoseq3 cluster --verbose --use-qvs flnc.fofn P10-46.clustered.bam
 ```
