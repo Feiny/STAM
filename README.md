@@ -50,18 +50,22 @@ perl fish_fasta_unmasked.pl P10-46.masked.hq.fasta.out.id P10-46.unaligned.hq.fa
 #Generate aligned, sorted sam file
 minimap2 -t 24 -Y -R "@RG\tID:Sample\tSM:hs\tLB:ga\tPL:PacBio" --MD -ax splice:hq -uf --secondary=no iwgsc_refseqv2.1_assembly.mmi P10-46.masked.hq.fasta -o aligned.RefSeq2.1.sam
 sort -k 3,3 -k 4,4n aligned.RefSeq2.1.sam > aligned.RefSeq2.1.sorted.sam
-
-#Collapse redundant isoforms (for well-mapped reads)
-collapse_isoforms_by_sam.py --input P10-46.clustered.hq.fished.fasta -s aligned.RefSeq2.1.sorted.sam --dun-merge-5-shorter -o clustered
-#Filter collapse results by minimum FL count support
+```
+##### d. Generate final transcript set
+``` bash
+#Collapse redundant isoforms using Cupcake (for well-mapped reads)
+collapse_isoforms_by_sam.py --input P10-46.masked.hq.fasta -s aligned.RefSeq2.1.sorted.sam --dun-merge-5-shorter -o clustered
+#Obtain associated count information
 get_abundance_post_collapse.py clustered.collapsed P10-46.cluster_report.csv
-filter_by_count.py --min_count 1 --dun_use_group_count clustered.collapsed
+#Filter collapse results by minimum FL count support
+filter_by_count.py --min_count 2 --dun_use_group_count clustered.collapsed
 #Filter away 5' degraded isoforms
-filter_away_subset.py clustered.collapsed.min_fl_1
+filter_away_subset.py clustered.collapsed.min_fl_2
 
-#Collapse redundant isoforms (for unmapped or badly mapped reads)
+#Collapse redundant isoforms using Cogent (for unmapped or badly mapped reads)
+
 #Running family finding for a small dataset (≤20000)
-run_mash.py --cpus=12 clustered.collapsed.group.ignored_id.fa
+run_mash.py -k 30 --cpus=12 clustered.collapsed.group.ignored_id.fa
 #Process the distance file and create the partitions
 process_kmer_to_graph.py clustered.collapsed.group.ignored_id.fa clustered.collapsed.group.ignored_id.fa.s1000k30.dist ignored yr10
 #Generate batch commands to run family finding on each bin
@@ -75,9 +79,8 @@ done
 printf "Partition\tSize\tMembers\n" > final.partition.txt
 ls preCluster_out/*/*partition.txt | xargs -n1 -i sed '1d; $d' {} | cat >> final.partition.txt
 
-```
-##### d. Generate final transcript set
-``` bash
+
+#Merge transcripts and generate the final transcript set
 #uniq >P10-46.combined.id
 perl fish_fa.pl P10-46.combined.id P10-46.clustered.hq.fasta > P10-46.combined.fa
 cd-hit-est -i P10-46.combined.fa -o P10-46.final.transcrits.fa -c 1 -T 12
