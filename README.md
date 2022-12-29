@@ -89,7 +89,7 @@ filter_away_subset.py hq_transcripts.fasta.collapsed #hq_transcripts.fasta.colla
 
 #Merge transcripts and generate the final transcript set
 cat clustered.collapsed.min_fl_2.filtered.rep.fa hq_transcripts.fasta.collapsed.filtered.rep.fa > P10-46.combined.fa
-cd-hit-est -i P10-46.combined.fa -o P10-46.final.transcrits.fa -c 1 -T 12
+cd-hit-est -i P10-46.combined.fa -o P10-46.final.transcrits.fasta -c 1 -T 12
 ```
 ---
 ### 3) Variant calling
@@ -114,7 +114,7 @@ done
 ##### b. Mapping
 ###### Generate genome index
 ``` bash
-ref='P10-46.final.transcrits.fa'
+ref='P10-46.final.transcrits.fasta'
 STAR='<path_to_STAR>/STAR'
 picard='<path_to_picard>/picard.jar'
 samtools='<path_to_samtools>/samtools'
