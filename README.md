@@ -167,7 +167,7 @@ done
 ```
 ##### c. Variant calling
 ``` bash
-ref='P10-46.final.transcrits.fa'
+ref='P10-46.final.transcrits.fasta'
 gatk='<path_to_gatk>/gatk'
 for sample in $(cat sample.id)
 do
