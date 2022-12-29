@@ -16,6 +16,6 @@ while(<IN2>){
   s/>//;
   next unless my ($id, $seq)=split(/\n/, $_, 2);
   my @id=split(/\s/,$id);
-  print ">$id$seq" unless exists ($id{$id[0]});
+  print ">$id\n$seq" unless exists ($good{$id[0]});
 }
 close IN2;
