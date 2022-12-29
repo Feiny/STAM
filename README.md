@@ -67,23 +67,30 @@ filter_by_count.py --min_count 2 --dun_use_group_count clustered.collapsed
 filter_away_subset.py clustered.collapsed.min_fl_2 #clustered.collapsed.min_fl_2.filtered.rep.fa
 
 #Collapse redundant isoforms using Cogent (for unmapped reads)
-#Fish out the unmapped reads
-fish_bad_or_unmappped_hq.pl clustered.collapsed.group.id P10-46.masked.hq.fasta > clustered.badmapped.fa
+#Fish out the unmapped/ignored reads
+perl fish_fa.pl clustered.collapsed.group.id P10-46.masked.hq.fasta > clustered.collapsed.group.ignored_id.fa
 #Running family finding for a small dataset (≤20000)
 run_mash.py -k 30 --cpus=12 clustered.collapsed.group.ignored_id.fa
 #Process the distance file and create the partitions
-process_kmer_to_graph.py clustered.collapsed.group.ignored_id.fa clustered.collapsed.group.ignored_id.fa.s1000k30.dist ignored yr10
+process_kmer_to_graph.py clustered.collapsed.group.ignored_id.fa clustered.collapsed.group.ignored_id.fa.s1000k30.dist partitions_P10-46 P10-46
 #Generate batch commands to run family finding on each bin
-generate_batch_cmd_for_Cogent_reconstruction.py ignored > batch_cmd_for_Cogent_reconstruction.sh
-split -l 20 -d -a 3 batch_cmd_for_Cogent_reconstruction.sh tem
+generate_batch_cmd_for_Cogent_reconstruction.py partitions_P10-46 > batch_cmd_for_Cogent_reconstruction.sh
+split -l 100 -d -a 2 batch_cmd_for_Cogent_reconstruction.sh tem # -l line number perl output file
 for i in $(ls tem*)
-do
+do 
     sh $i &
 done
-#Combine the partition output from each bin
-printf "Partition\tSize\tMembers\n" > final.partition.txt
-ls preCluster_out/*/*partition.txt | xargs -n1 -i sed '1d; $d' {} | cat >> final.partition.txt
-
+#Get the unassigned sequences and concatenate with Cogent contigs
+tail -n 1 P10-46.partition.txt | tr ',' '\n'  > P10-46.unassigned.list
+perl fish_fa.pl unassigned.list P10-46.masked.hq.fasta > unassigned.fasta
+mkdir collected && cd collected
+cat ../partitions_P10-46/*/cogent2.renamed.fasta ../unassigned.fasta > cogent.fake_genome.fasta
+#Collapse redundant isoforms
+<path_to_minimap2>/minimap2 -ax splice -t 30 -uf --secondary=no cogent.fake_genome.fasta ../P10-46.masked.hq.fasta >hq_transcripts.fasta.sam
+sort -k 3,3 -k 4,4n hq_transcripts.fasta.sam >hq_transcripts.fasta.sorted.sam
+collapse_isoforms_by_sam.py --input ../P10-46.masked.hq.fasta -s hq_transcripts.fasta.sorted.sam -o hq_transcripts.fasta
+get_abundance_post_collapse.py hq_transcripts.fasta.collapsed P10-46.clustered.cluster_report.csv
+filter_away_subset.py hq_transcripts.fasta.collapsed #hq_transcripts.fasta.collapsed.filtered.rep.fa
 
 #Merge transcripts and generate the final transcript set
 #uniq >P10-46.combined.id
