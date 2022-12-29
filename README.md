@@ -35,7 +35,7 @@ HQ transcripts were mapped to the genome reference of *Pst* isolate 134E (DOI:10
 ##### a. Generate fished HQ transcripts
 ``` bash
 #Map HQ transcripts to the genome reference of *Pst* isolate 134E
-minimap2 -t 8 -Y -R "@RG\tID:Sample\tSM:hs\tLB:ga\tPL:PacBio" --MD -ax splice:hq -uf --secondary=no Pst134e.reference.fasta P10-46.clustered.hq.fasta >aligned.Pst134e.sam
+<path_to_minimap2>/minimap2 -t 8 -Y -R "@RG\tID:Sample\tSM:hs\tLB:ga\tPL:PacBio" --MD -ax splice:hq -uf --secondary=no Pst134e.reference.fasta P10-46.clustered.hq.fasta >aligned.Pst134e.sam
 #Remove the stripe rust transcripts
 grep -v '@' aligned.Pst134e.sam | awk '$3=="*"{print $1}' | sort -t "/" -k 2 -n | uniq > unaligned.Pst134e.id
 perl fish_fasta_unaligned.pl unaligned.Pst134e.id P10-46.clustered.hq.fasta > P10-46.unaligned.hq.fasta
@@ -43,7 +43,7 @@ perl fish_fasta_unaligned.pl unaligned.Pst134e.id P10-46.clustered.hq.fasta > P1
 ##### b. Generate masked HQ transcripts
 ``` bash
 #Mask transposable elements using Repeatmasker
-RepeatMasker -gff -nolow -no_is -xsmall -pa 12 P10-46.unaligned.hq.fasta
+<path_to_RepeatMasker>/RepeatMasker -gff -nolow -no_is -xsmall -pa 12 P10-46.unaligned.hq.fasta
 #Identify transposable elements
 grep -v '^#' P10-46.unaligned.hq.fasta.out.gff | cut -f 1 |  sort -t "/" -k 2 -n > P10-46.masked.hq.fasta.out.id
 #Remove transposable elements
