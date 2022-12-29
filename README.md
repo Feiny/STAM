@@ -52,12 +52,12 @@ perl fish_fasta_unmasked.pl P10-46.masked.hq.fasta.out.id P10-46.unaligned.hq.fa
 ##### c. Generate aligned HQ transcripts
 ``` bash
 #Generate aligned, sorted sam file
-minimap2 -t 24 -Y -R "@RG\tID:Sample\tSM:hs\tLB:ga\tPL:PacBio" --MD -ax splice:hq -uf --secondary=no iwgsc_refseqv2.1_assembly.mmi P10-46.masked.hq.fasta -o aligned.RefSeq2.1.sam
+<path_to_minimap2>/minimap2 -t 24 -Y -R "@RG\tID:Sample\tSM:hs\tLB:ga\tPL:PacBio" --MD -ax splice:hq -uf --secondary=no iwgsc_refseqv2.1_assembly.mmi P10-46.masked.hq.fasta -o aligned.RefSeq2.1.sam
 sort -k 3,3 -k 4,4n aligned.RefSeq2.1.sam > aligned.RefSeq2.1.sorted.sam
 ```
 ##### d. Generate final transcript set
 ``` bash
-#Collapse redundant isoforms using Cupcake (for well-mapped reads)
+##Collapse redundant isoforms using Cupcake (for well-mapped reads)
 collapse_isoforms_by_sam.py --input P10-46.masked.hq.fasta -s aligned.RefSeq2.1.sorted.sam --dun-merge-5-shorter -o clustered
 #Obtain associated count information
 get_abundance_post_collapse.py clustered.collapsed P10-46.cluster_report.csv
@@ -66,7 +66,7 @@ filter_by_count.py --min_count 2 --dun_use_group_count clustered.collapsed
 #Filter away 5' degraded isoforms
 filter_away_subset.py clustered.collapsed.min_fl_2 #clustered.collapsed.min_fl_2.filtered.rep.fa
 
-#Collapse redundant isoforms using Cogent (for unmapped reads)
+##Collapse redundant isoforms using Cogent (for unmapped reads)
 #Fish out the unmapped/ignored reads
 perl fish_fa.pl clustered.collapsed.group.id P10-46.masked.hq.fasta > clustered.collapsed.group.ignored_id.fa
 #Running family finding for a small dataset (≤20000)
@@ -75,11 +75,13 @@ run_mash.py -k 30 --cpus=12 clustered.collapsed.group.ignored_id.fa
 process_kmer_to_graph.py clustered.collapsed.group.ignored_id.fa clustered.collapsed.group.ignored_id.fa.s1000k30.dist partitions_P10-46 P10-46
 #Generate batch commands to run family finding on each bin
 generate_batch_cmd_for_Cogent_reconstruction.py partitions_P10-46 > batch_cmd_for_Cogent_reconstruction.sh && sh batch_cmd_for_Cogent_reconstruction.sh
+
 #Get the unassigned sequences and concatenate with Cogent contigs
 tail -n 1 P10-46.partition.txt | tr ',' '\n'  > P10-46.unassigned.list
 perl fish_fa.pl unassigned.list P10-46.masked.hq.fasta > unassigned.fasta
 mkdir collected && cd collected
 cat ../partitions_P10-46/*/cogent2.renamed.fasta ../unassigned.fasta > cogent.fake_genome.fasta
+
 #Collapse redundant isoforms
 <path_to_minimap2>/minimap2 -ax splice -t 30 -uf --secondary=no cogent.fake_genome.fasta ../P10-46.masked.hq.fasta >hq_transcripts.fasta.sam
 sort -k 3,3 -k 4,4n hq_transcripts.fasta.sam >hq_transcripts.fasta.sorted.sam
@@ -112,26 +114,25 @@ do
 done
 ```
 ##### b. Mapping
-###### Generate genome index
+###### Generate reference index
 ``` bash
 ref='P10-46.final.transcrits.fasta'
 STAR='<path_to_STAR>/STAR'
 picard='<path_to_picard>/picard.jar'
 samtools='<path_to_samtools>/samtools'
-
+#Build reference index
 $STAR --runThreadN 24 \
      --runMode genomeGenerate \
      --genomeDir ~/Project_Yr10/ref/uniq_id2/ \
      --genomeFastaFiles $ref
-#
 java -jar $picard CreateSequenceDictionary \
-      --REFERENCE /home/klab/Project_Yr10/PacBio_Yr10/collapsing/uniq_id2.fa \
-      --OUTPUT /home/klab/Project_Yr10/ref/uniq_id2.dict
-#
-$samtools faidx /home/klab/Project_Yr10/ref/uniq_id2.fa
+      --REFERENCE $ref \
+      --OUTPUT P10-46.final.transcrits.dict
+$samtools faidx P10-46.final.transcrits.fasta
 ```
 ###### Map RNA-Seq reads to the transcript reference
 ``` bash
+refdir='<path_to_reference_index>'
 for name in $(cat sample.id)
 do
     $STAR --runThreadN 24 \
