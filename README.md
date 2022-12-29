@@ -88,8 +88,8 @@ get_abundance_post_collapse.py hq_transcripts.fasta.collapsed P10-46.clustered.c
 filter_away_subset.py hq_transcripts.fasta.collapsed #hq_transcripts.fasta.collapsed.filtered.rep.fa
 
 #Merge transcripts and generate the final transcript set
-cat clustered.collapsed.min_fl_2.filtered.rep.fa hq_transcripts.fasta.collapsed.filtered.rep.fa > P10-46.combined.fa
-cd-hit-est -i P10-46.combined.fa -o P10-46.final.transcrits.fasta -c 1 -T 12
+cat clustered.collapsed.min_fl_2.filtered.rep.fa hq_transcripts.fasta.collapsed.filtered.rep.fa > P10-46.combined.fasta
+cd-hit-est -i P10-46.combined.fasta -o P10-46.final.transcrits.fasta -c 1 -T 12
 ```
 ---
 ### 3) Variant calling
