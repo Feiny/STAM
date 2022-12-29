@@ -74,12 +74,7 @@ run_mash.py -k 30 --cpus=12 clustered.collapsed.group.ignored_id.fa
 #Process the distance file and create the partitions
 process_kmer_to_graph.py clustered.collapsed.group.ignored_id.fa clustered.collapsed.group.ignored_id.fa.s1000k30.dist partitions_P10-46 P10-46
 #Generate batch commands to run family finding on each bin
-generate_batch_cmd_for_Cogent_reconstruction.py partitions_P10-46 > batch_cmd_for_Cogent_reconstruction.sh
-split -l 100 -d -a 2 batch_cmd_for_Cogent_reconstruction.sh tem # -l line number perl output file
-for i in $(ls tem*)
-do 
-    sh $i &
-done
+generate_batch_cmd_for_Cogent_reconstruction.py partitions_P10-46 > batch_cmd_for_Cogent_reconstruction.sh && sh batch_cmd_for_Cogent_reconstruction.sh
 #Get the unassigned sequences and concatenate with Cogent contigs
 tail -n 1 P10-46.partition.txt | tr ',' '\n'  > P10-46.unassigned.list
 perl fish_fa.pl unassigned.list P10-46.masked.hq.fasta > unassigned.fasta
@@ -93,8 +88,7 @@ get_abundance_post_collapse.py hq_transcripts.fasta.collapsed P10-46.clustered.c
 filter_away_subset.py hq_transcripts.fasta.collapsed #hq_transcripts.fasta.collapsed.filtered.rep.fa
 
 #Merge transcripts and generate the final transcript set
-#uniq >P10-46.combined.id
-perl fish_fa.pl P10-46.combined.id P10-46.clustered.hq.fasta > P10-46.combined.fa
+cat clustered.collapsed.min_fl_2.filtered.rep.fa hq_transcripts.fasta.collapsed.filtered.rep.fa > P10-46.combined.fa
 cd-hit-est -i P10-46.combined.fa -o P10-46.final.transcrits.fa -c 1 -T 12
 ```
 ---
