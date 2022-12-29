@@ -64,10 +64,11 @@ get_abundance_post_collapse.py clustered.collapsed P10-46.cluster_report.csv
 #Filter collapse results by minimum FL count support
 filter_by_count.py --min_count 2 --dun_use_group_count clustered.collapsed
 #Filter away 5' degraded isoforms
-filter_away_subset.py clustered.collapsed.min_fl_2
+filter_away_subset.py clustered.collapsed.min_fl_2 #clustered.collapsed.min_fl_2.filtered.rep.fa
 
-#Collapse redundant isoforms using Cogent (for unmapped or badly mapped reads)
-
+#Collapse redundant isoforms using Cogent (for unmapped reads)
+#Fish out the unmapped reads
+fish_bad_or_unmappped_hq.pl clustered.collapsed.group.id P10-46.masked.hq.fasta > clustered.badmapped.fa
 #Running family finding for a small dataset (≤20000)
 run_mash.py -k 30 --cpus=12 clustered.collapsed.group.ignored_id.fa
 #Process the distance file and create the partitions
@@ -94,6 +95,7 @@ cd-hit-est -i P10-46.combined.fa -o P10-46.final.transcrits.fa -c 1 -T 12
 Adapter trimming and quality filtration of RNA-Seq reads of seven Yr10-defective mutants and resistant cultivar Moro were firstly performed using fastp (https://github.com/OpenGene/fastp), and the clean data was then mapped to the final transcript set obtained in the previous step using STAR (https://github.com/alexdobin/STAR). Potential PCR duplicates reads were further removed using Picard (https://broadinstitute.github.io/picard) and generated analysis ready reads. SNPs were identified by the HaplotypeCaller tool of GATK v4.2 in GVCF mode (https://gatk.broadinstitute.org). Then, all the per-sample GVCFs were gathered and passed to GATK GenotypeGVCFs for joint calling. Variants were preliminarily filtered using GATK VariantFiltration with the parameter “DP < 5 || FS > 60.0 || MQ < 40.0 || QD < 2.0” and generated analysis-ready SNPs. 
 ##### a. Adapter trimming and quality filtration of RNA-Seq data
 ``` bash
+fastp='<path_to_fastp>/fastp'
 for name in $(cat sample.id)
 do
     $fastp --thread 2 \
@@ -112,7 +114,11 @@ done
 ###### Generate genome index
 ``` bash
 ref='P10-46.final.transcrits.fa'
-$STAR --runThreadN 64 \
+STAR='<path_to_STAR>/STAR'
+picard='<path_to_picard>/picard.jar'
+samtools='<path_to_samtools>/samtools'
+
+$STAR --runThreadN 24 \
      --runMode genomeGenerate \
      --genomeDir ~/Project_Yr10/ref/uniq_id2/ \
      --genomeFastaFiles $ref
@@ -136,7 +142,7 @@ do
         --outFileNamePrefix $name. \
         --outSAMmapqUnique 60
 
-    java -XX:ParallelGCThreads=24 -jar $picard \
+    java -XX:ParallelGCThreads=12 -jar $picard \
         AddOrReplaceReadGroups \
         --INPUT $name.Aligned.sortedByCoord.out.bam \
         --OUTPUT $name.RG.bam \
@@ -147,7 +153,7 @@ do
         --RGPU BARCODE \
         --RGSM $name
     
-    java -XX:ParallelGCThreads=24 -jar $picard \
+    java -XX:ParallelGCThreads=12 -jar $picard \
         MarkDuplicates \
         --INPUT $name.RG.bam \
         --OUTPUT $name.dedupped.bam \
@@ -160,10 +166,12 @@ done
 ```
 ##### c. Variant calling
 ``` bash
+ref='P10-46.final.transcrits.fa'
+gatk='<path_to_gatk>/gatk'
 for sample in $(cat sample.id)
 do
-    $gatk --java-options -Xmx5G HaplotypeCaller -R $ref -I $name.dedupped.bam -OVI false -ERC GVCF -O $name.g.vcf.gz 1>$name.hc.log 2>&1
-    $gatk --java-options -Xmx5G IndexFeatureFile -I $name.g.vcf.gz
+    $gatk --java-options -Xmx10G HaplotypeCaller -R $ref -I $name.dedupped.bam -OVI false -ERC GVCF -O $name.g.vcf.gz 1>$name.hc.log 2>&1
+    $gatk --java-options -Xmx10G IndexFeatureFile -I $name.g.vcf.gz
 done
 
 $gatk --java-options -Xmx10G CombineGVCFs \
