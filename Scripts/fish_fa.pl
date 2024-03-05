@@ -11,7 +11,7 @@ while (my $line = <$in1_fh>) {
 close($in1_fh);
 
 $/ = ">";
-open(my $in2_fh, "<", $ARGV[1]) or die "Cannot open input file '$ARGV[1]': $!";
+open(my $in2_fh, "gzip -dc $ARGV[1]|") or die "Cannot open input file '$ARGV[1]': $!";
 while (my $block = <$in2_fh>) {
     chomp($block);
     $block =~ s/^>//;
