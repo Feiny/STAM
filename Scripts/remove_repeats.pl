@@ -24,6 +24,6 @@ while (<$in3_fh>) {
     chomp;
     next unless my ($name, $sequence) = split /\n/;
     my @name = split(/\|/, $name);
-    print "$in\n$sequence\n" unless exists $id{$name[$#name]}; 
+    print ">$name\n$sequence\n" unless exists $id{$name[$#name]}; 
 }
 close($in3_fh);
